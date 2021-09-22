@@ -212,6 +212,11 @@ Shader "Hidden/HDRP/DebugFullScreen"
                     float4 color = LOAD_TEXTURE2D_X(_DebugFullScreenTexture, (uint2)(input.positionCS.xy));
                     return float4(color.xxx, 1.0);
                 }
+                if ( _FullScreenDebugMode == FULLSCREENDEBUGMODE_OCEAN)
+                {
+                    float4 color = LOAD_TEXTURE2D_X(_DebugFullScreenTexture, (uint2)(input.positionCS.xy));
+                    return float4(color.xy, 0.0, 1.0);
+                }
                 if ( _FullScreenDebugMode == FULLSCREENDEBUGMODE_SCREEN_SPACE_SHADOWS)
                 {
                     float4 color = LOAD_TEXTURE2D_X(_DebugFullScreenTexture, (uint2)input.positionCS.xy);

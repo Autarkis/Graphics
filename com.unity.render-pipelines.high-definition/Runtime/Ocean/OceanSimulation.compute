@@ -1,0 +1,125 @@
+#pragma kernel InitializePhillipsSpectrum
+#pragma kernel EvaluateDispersion
+#pragma kernel EvaluateNormals
+
+// Required to be edfined for some includes
+#define OCEAN_SIMULATION
+
+// #pragma enable_d3d11_debug_symbols
+
+// SRP generic includes
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/NormalSurfaceGradient.hlsl"
+#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Ocean/OceanRendererDef.cs.hlsl"
+#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Ocean/OceanUtilities.hlsl"
+#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingSampling.hlsl"
+
+// InitializePhillipsSpectrum UAVS
+RWTexture2DArray<float2> _H0BufferRW;
+
+[numthreads(8, 8, 1)]
+void InitializePhillipsSpectrum(uint3 currentThread : SV_DispatchThreadID)
+{
+    // Generate all the required noise samples
+    float u0 = GetBNDSequenceSample(currentThread.xy, 0 + currentThread.z * 2, 0);
+    float v0 = GetBNDSequenceSample(currentThread.xy, 0 + currentThread.z * 2, 1);
+    float u1 = GetBNDSequenceSample(currentThread.xy, 1 + currentThread.z * 2, 0);
+    float v1 = GetBNDSequenceSample(currentThread.xy, 1 + currentThread.z * 2, 1);
+
+    // Generate the initial phillips spectrum
+    float2 E = float2(GaussianDistribution(u0, v0), GaussianDistribution(u1, v1)) * 0.70710678118f;
+    float2 nDC = (currentThread.xy / (float)_BandResolution - 0.5f) * 2.0f;
+    float2 k = (TWO_PI * nDC) / _BandPatchSize[currentThread.z] * PHILLIPS_PATCH_SCALAR;
+    float  P = Phillips(k, _WindDirection, _WindSpeed, _DirectionDampener);
+	_H0BufferRW[int3(currentThread.xy, currentThread.z)] = E * P * PHILLIPS_AMPLITUDE_SCALAR;
+}
+
+// EvaluateDispersion UAVS
+Texture2DArray<float2> _H0Buffer;
+RWTexture2DArray<float4> _HtRealBufferRW;
+RWTexture2DArray<float4> _HtImaginaryBufferRW;
+
+[numthreads(8, 8, 1)]
+void EvaluateDispersion(uint3 currentThread : SV_DispatchThreadID)
+{
+    float2 nDC = (currentThread.xy / (float)_BandResolution - 0.5) * 2.0;
+    float2 k = (TWO_PI * nDC) / _BandPatchSize[currentThread.z] * PHILLIPS_PATCH_SCALAR;
+
+    float  kl = length(k);
+    float  w = sqrt(PHILLIPS_GRAVITY_CONSTANT * kl);
+    float2 kx = float2(k.x / kl, 0.0);
+    float2 ky = float2(k.y / kl, 0.0);
+
+    float2 ht = ComplexMult(LOAD_TEXTURE2D_ARRAY(_H0Buffer, currentThread.xy, currentThread.z), ComplexExp(w * _DispersionTime));
+    float2 dx = ComplexMult(ComplexMult(float2(0, -1), kx), ht);
+    float2 dy = ComplexMult(ComplexMult(float2(0, -1), ky), ht);
+
+    if (dx.x != dx.x) dx.x = 0.f;
+    if (dx.y != dx.y) dx.y = 0.f;
+    if (dy.x != dy.x) dy.x = 0.f;
+    if (dy.y != dy.y) dy.y = 0.f;
+
+    // TODO: This is a work around to handle singularity at origin.
+    // The above nan check should have picked it up but it doesn't
+    // work on metal. Must investigate.
+    uint halfBandResolution = _BandResolution / 2;
+    if((currentThread.x == halfBandResolution) && (currentThread.y == halfBandResolution))
+    {
+        dx = float2(0, 0);
+        dy = float2(0, 0);
+    }
+
+    _HtRealBufferRW[int3(currentThread.xy, currentThread.z)] = float4(ht.x, dx.x, dy.x, 0);
+    _HtImaginaryBufferRW[int3(currentThread.xy, currentThread.z)] = float4(ht.y, dx.y, dy.y, 0);
+}
+
+// EvaluateNormals UAVS
+RWTexture2DArray<float4> _NormalBufferRW;
+
+float square(float value)
+{
+    return value * value;
+}
+
+[numthreads(8, 8, 1)]
+void EvaluateNormals(uint3 currentThread : SV_DispatchThreadID)
+{
+    // Extract the information about the pixel to process
+    uint2 coord = currentThread.xy;
+    uint bandIdx = currentThread.z;
+    
+    // Get the displacement at the center coordinate
+    float3 displacementCenter = LOAD_TEXTURE2D_ARRAY(_DisplacementBuffer, coord, bandIdx).xyz;
+
+    // Sample pixels from the region we need
+    float3 displacementRight = LOAD_TEXTURE2D_ARRAY(_DisplacementBuffer, uint2(coord + int2(1, 0)) & (_BandResolution - 1), bandIdx).xyz;
+    float3 displacementUp = LOAD_TEXTURE2D_ARRAY(_DisplacementBuffer, uint2(coord + int2(0, 1)) & (_BandResolution - 1), bandIdx).xyz;
+
+    // Compute the displacement factor we need to compute the derivatives
+    float  displacementFactor = (PHILLIPS_PATCH_SCALAR * OCEAN_AMPLITUDE_NORMALIZATION) / square(_BandPatchSize[bandIdx]);
+
+    // Evaluate the surface gradient of this pixels
+    float  deltaY = (_BandResolution * displacementFactor);
+    float  deltaX = (displacementRight.x - displacementCenter.x);
+    float  deltaZ = (displacementUp.x - displacementCenter.x);
+    float2 surfaceGradient = float2(deltaX, deltaZ) * deltaY;
+
+    // Compute the jacobian of this pixel
+    float Jxx = 1.f + _JacobianLambda[bandIdx] * (displacementCenter.y - displacementRight.y);
+    float Jyy = 1.f + _JacobianLambda[bandIdx] * (displacementCenter.z - displacementUp.z);
+    float Jyx = _JacobianLambda[bandIdx] * (displacementCenter.z - displacementRight.z);
+    float Jxy = _JacobianLambda[bandIdx] * (displacementCenter.y - displacementUp.y);
+    float jacobian = (Jxx * Jyy - Jxy * Jyx);
+
+    // Deduce the foam from the jacobian
+    float foam = saturate(1.f - (jacobian + _FoamJacobianOffset[bandIdx]));
+
+    // Combine with the previous jacobian
+    float previousFoam = _NormalBufferRW[int3(coord, bandIdx)].z;
+
+    // Combine the foam with the previous iteration foam
+    float newFoam = previousFoam * _FoamFadeOut[bandIdx] + foam * _FoamFadeIn[bandIdx];
+
+    // Output the normal and foam
+    _NormalBufferRW[int3(coord, bandIdx)] = float4(surfaceGradient, newFoam, 1.0);
+} 

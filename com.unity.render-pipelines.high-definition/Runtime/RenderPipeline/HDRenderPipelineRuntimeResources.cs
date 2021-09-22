@@ -167,6 +167,14 @@ namespace UnityEngine.Rendering.HighDefinition
             [Reload("Runtime/Lighting/VolumetricLighting/VolumetricCloudsCombine.shader")]
             public Shader volumetricCloudsCombinePS;
 
+            // Ocean
+            [Reload("Runtime/Ocean/OceanSimulation.compute")]
+            public ComputeShader oceanSimulationCS;
+            [Reload("Runtime/Ocean/FourierTransform.compute")]
+            public ComputeShader fourierTransformCS;
+            [Reload("Runtime/RenderPipelineResources/ShaderGraph/Ocean.shadergraph")]
+            public Shader oceanPS;
+
             // Material
             [Reload("Runtime/Material/PreIntegratedFGD/PreIntegratedFGD_GGXDisneyDiffuse.shader")]
             public Shader preIntegratedFGD_GGXDisneyDiffusePS;
@@ -377,6 +385,9 @@ namespace UnityEngine.Rendering.HighDefinition
         [Serializable, ReloadGroup]
         public sealed class MaterialResources
         {
+            // Ocean
+            [Reload("Runtime/RenderPipelineResources/Material/DefaultOceanMaterial.mat")]
+            public Material defaultOceanMaterial;
         }
 
         [Serializable, ReloadGroup]

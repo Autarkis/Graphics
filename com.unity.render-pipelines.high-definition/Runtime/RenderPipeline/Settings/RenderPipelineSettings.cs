@@ -101,6 +101,8 @@ namespace UnityEngine.Rendering.HighDefinition
                 supportRuntimeAOVAPI = false,
                 supportDitheringCrossFade = true,
                 supportTerrainHole = false,
+                supportOcean = false,
+                oceanSimulationResolution = OceanSimulationResolution.Low64,
                 planarReflectionResolution = new PlanarReflectionAtlasResolutionScalableSetting(new[] { PlanarReflectionAtlasResolution.Resolution256,
                                                                                                         PlanarReflectionAtlasResolution.Resolution1024,
                                                                                                         PlanarReflectionAtlasResolution.Resolution2048 },
@@ -181,6 +183,11 @@ namespace UnityEngine.Rendering.HighDefinition
         public bool supportVolumetricClouds;
         /// <summary>Support light layers.</summary>
         public bool supportLightLayers;
+        /// <summary>Support ocean.</summary>
+        public bool supportOcean;
+        /// <summary>Ocean simulation resolution</summary>
+        public OceanSimulationResolution oceanSimulationResolution;
+
         /// <summary>Name for light layer 0.</summary>
         public string lightLayerName0
         {

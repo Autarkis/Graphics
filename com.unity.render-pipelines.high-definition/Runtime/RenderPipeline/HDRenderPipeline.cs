@@ -390,6 +390,7 @@ namespace UnityEngine.Rendering.HighDefinition
             InitializeVolumetricLighting();
             InitializeVolumetricClouds();
             InitializeSubsurfaceScattering();
+            InitializeOceanRenderer();
 
             m_DebugDisplaySettings.RegisterDebug();
 #if UNITY_EDITOR

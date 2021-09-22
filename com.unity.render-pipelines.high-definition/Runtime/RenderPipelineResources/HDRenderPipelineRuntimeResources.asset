@@ -82,6 +82,9 @@ MonoBehaviour:
     volumetricCloudsCS: {fileID: 7200000, guid: f911a8577fa9a4546a6b255bcf888baf, type: 3}
     volumetricCloudMapGeneratorCS: {fileID: 7200000, guid: 6b22771f0aa98744cb09f455a5a818cb, type: 3}
     volumetricCloudsCombinePS: {fileID: 4800000, guid: 12f1a69ddf916f042ae6ce8a994506f3, type: 3}
+    oceanSimulationCS: {fileID: 7200000, guid: f6df87d60ea2a9444918a09098874b23, type: 3}
+    fourierTransformCS: {fileID: 7200000, guid: 006aabe8be599854c9abea76f890d60b, type: 3}
+    oceanPS: {fileID: 4800000, guid: f6d985f125afcbc44b645e5585b0a907, type: 3}
     preIntegratedFGD_GGXDisneyDiffusePS: {fileID: 4800000, guid: 123f13d52852ef547b2962de4bd9eaad, type: 3}
     preIntegratedFGD_CharlieFabricLambertPS: {fileID: 4800000, guid: 3b3bf235775cf8b4baae7f3306787ab0, type: 3}
     preIntegratedFGD_WardPS: {fileID: 4800000, guid: d279c46a545b0af4f9f0c4fa82cd489e, type: 3}

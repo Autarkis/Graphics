@@ -50,6 +50,7 @@ namespace UnityEditor.Rendering.HighDefinition
             RTGIQuality = 1 << 33,
             SSGIQuality = 1 << 34,
             VolumetricClouds = 1 << 35,
+            Ocean = 1 << 36,
         }
 
         enum ExpandableShadows
@@ -120,7 +121,8 @@ namespace UnityEditor.Rendering.HighDefinition
                     CED.Group(GroupOption.Indent, Drawer_SectionRenderingUnsorted),
                     CED.FoldoutGroup(Styles.decalsSubTitle, Expandable.Decal, k_ExpandedState, FoldoutOption.Indent | FoldoutOption.SubFoldout, Drawer_SectionDecalSettings),
                     CED.FoldoutGroup(Styles.dynamicResolutionSubTitle, Expandable.DynamicResolution, k_ExpandedState, FoldoutOption.Indent | FoldoutOption.SubFoldout | FoldoutOption.NoSpaceAtEnd, Drawer_SectionDynamicResolutionSettings),
-                    CED.FoldoutGroup(Styles.lowResTransparencySubTitle, Expandable.LowResTransparency, k_ExpandedState, FoldoutOption.Indent | FoldoutOption.SubFoldout | FoldoutOption.NoSpaceAtEnd, Drawer_SectionLowResTransparentSettings)
+                    CED.FoldoutGroup(Styles.lowResTransparencySubTitle, Expandable.LowResTransparency, k_ExpandedState, FoldoutOption.Indent | FoldoutOption.SubFoldout | FoldoutOption.NoSpaceAtEnd, Drawer_SectionLowResTransparentSettings),
+                    CED.FoldoutGroup(Styles.oceanSubTitle, Expandable.Ocean, k_ExpandedState, FoldoutOption.Indent | FoldoutOption.SubFoldout | FoldoutOption.NoSpaceAtEnd, Drawer_SectionOceanSettings)
                     ),
                 CED.FoldoutGroup(Styles.lightingSectionTitle, Expandable.Lighting, k_ExpandedState,
                     CED.Group(GroupOption.Indent, Drawer_SectionLightingUnsorted),
@@ -682,6 +684,12 @@ namespace UnityEditor.Rendering.HighDefinition
             }
             --EditorGUI.indentLevel;
             */
+        }
+
+        static void Drawer_SectionOceanSettings(SerializedHDRenderPipelineAsset serialized, Editor owner)
+        {
+            EditorGUILayout.PropertyField(serialized.renderPipelineSettings.supportOcean, Styles.supportOceanContent);
+            EditorGUILayout.PropertyField(serialized.renderPipelineSettings.oceanSimulationResolution, Styles.oceanSimulationResolutionContent);
         }
 
         static void Drawer_SectionPostProcessSettings(SerializedHDRenderPipelineAsset serialized, Editor owner)

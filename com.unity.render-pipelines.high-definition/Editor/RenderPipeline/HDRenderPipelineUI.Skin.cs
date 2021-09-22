@@ -41,6 +41,8 @@ namespace UnityEditor.Rendering.HighDefinition
             public static readonly GUIContent dynamicResolutionSubTitle = EditorGUIUtility.TrTextContent("Dynamic resolution");
             public static readonly GUIContent lowResTransparencySubTitle = EditorGUIUtility.TrTextContent("Low res Transparency");
 
+            public static readonly GUIContent oceanSubTitle = EditorGUIUtility.TrTextContent("Ocean");
+
             public static readonly GUIContent motionBlurQualitySettings = EditorGUIUtility.TrTextContent("Motion Blur");
             public static readonly GUIContent bloomQualitySettings = EditorGUIUtility.TrTextContent("Bloom");
             public static readonly GUIContent chromaticAberrationQualitySettings = EditorGUIUtility.TrTextContent("Chromatic Aberration");
@@ -110,6 +112,10 @@ namespace UnityEditor.Rendering.HighDefinition
             public static readonly GUIContent SSGIDenoiserRadius = EditorGUIUtility.TrTextContent("Denoiser Radius");
             public static readonly GUIContent SSGISecondDenoise = EditorGUIUtility.TrTextContent("Second Denoiser Pass");
 
+            // Ocean rendering
+            public static readonly GUIContent supportOceanContent = EditorGUIUtility.TrTextContent("Ocean", "");
+            public static readonly GUIContent oceanSimulationResolutionContent = EditorGUIUtility.TrTextContent("Ocean Simulation Resolution", "");
+            
             // Fog
             public static readonly GUIContent FogSettingsSubTitle = EditorGUIUtility.TrTextContent("Volumetric Fog");
             public static readonly GUIContent FogSettingsBudget = EditorGUIUtility.TrTextContent("Volumetric Fog Budget");

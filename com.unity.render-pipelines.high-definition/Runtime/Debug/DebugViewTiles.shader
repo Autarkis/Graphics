@@ -224,8 +224,8 @@ Shader "Hidden/HDRP/DebugViewTiles"
                 }
 
                 // Print light lists for selected tile at the bottom of the screen
-                int maxLights = 32;
-                if (tileCoord.y < LIGHTCATEGORY_COUNT && tileCoord.x < maxLights + 3)
+                int maxAreaWidth = SHADEROPTIONS_FPTLMAX_LIGHT_COUNT + 4;
+                if (tileCoord.y < LIGHTCATEGORY_COUNT && tileCoord.x < maxAreaWidth)
                 {
                     float depthMouse = GetTileDepth(_MousePixelCoord.xy);
 

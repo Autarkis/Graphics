@@ -107,8 +107,11 @@ namespace UnityEngine.Rendering.HighDefinition
 
         // light list limits
         public static int s_LightListMaxCoarseEntries = 64;
-        public static int s_LightListMaxPrunedEntries = 24;
         public static int s_LightClusterMaxCoarseEntries = 128;
+
+        // We have room for ShaderConfig.FPTLMaxLightCount lights, plus 1 implicit value for length.
+        // We allocate only 16 bits per light index & length, thus we divide by 2, and store in a word buffer.
+        public static int s_LightDwordPerFplTile = ((ShaderConfig.FPTLMaxLightCount + 1)) / 2;
 
         // Following define the maximum number of bits use in each feature category.
         public static uint s_LightFeatureMaskFlags = 0xFFF000;
@@ -2997,7 +3000,7 @@ namespace UnityEngine.Rendering.HighDefinition
             // If contact shadows are not enabled or we already reached the manimal number of contact shadows
             // or this is not rasterization
             if ((!hdAdditionalLightData.useContactShadow.Value(contactShadowEnabled))
-                || m_ContactShadowIndex >= LightDefinitions.s_LightListMaxPrunedEntries
+                || m_ContactShadowIndex >= ShaderConfig.FPTLMaxLightCount
                 || !isRasterization)
                 return;
 

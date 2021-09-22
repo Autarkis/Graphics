@@ -4,8 +4,6 @@
 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightLoop/LightLoop.cs.hlsl"
 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightLoop/CookieSampling.hlsl"
 
-#define DWORD_PER_TILE 16 // See dwordsPerTile in LightLoop.cs, we have roomm for 31 lights and a number of light value all store on 16 bit (ushort)
-
 // Some file may not required HD shadow context at all. In this case provide an empty one
 // Note: if a double defintion error occur it is likely have include HDShadow.hlsl (and so HDShadowContext.hlsl) after lightloopdef.hlsl
 #ifndef HAVE_HD_SHADOW_CONTEXT
@@ -188,7 +186,7 @@ void GetCountAndStartTile(PositionInputs posInput, uint lightCategory, out uint 
 #endif
 
     // The first entry inside a tile is the number of light for lightCategory (thus the +0)
-    lightCount = g_vLightListTile[DWORD_PER_TILE * tileOffset + 0] & 0xffff;
+    lightCount = g_vLightListTile[LIGHT_DWORD_PER_FPL_TILE * tileOffset + 0] & 0xffff;
     start = tileOffset;
 }
 
@@ -208,7 +206,7 @@ uint FetchIndex(uint tileOffset, uint lightOffset)
 {
     const uint lightOffsetPlusOne = lightOffset + 1; // Add +1 as first slot is reserved to store number of light
     // Light index are store on 16bit
-    return (g_vLightListTile[DWORD_PER_TILE * tileOffset + (lightOffsetPlusOne >> 1)] >> ((lightOffsetPlusOne & 1) * DWORD_PER_TILE)) & 0xffff;
+    return (g_vLightListTile[LIGHT_DWORD_PER_FPL_TILE * tileOffset + (lightOffsetPlusOne >> 1)] >> ((lightOffsetPlusOne & 1) * 16)) & 0xffff;
 }
 
 #elif defined(USE_CLUSTERED_LIGHTLIST)
